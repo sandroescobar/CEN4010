@@ -61,7 +61,7 @@ struct PreferencePage: View {
                                 if selectedActivities.contains(activity) {
                                     selectedActivities.remove(activity)
                                 } else {
-                                    if selectedActivities.count >= 7 {
+                                    if selectedActivities.count >= 5 {
                                         showMaxSelectionAlert = true
                                     } else {
                                         selectedActivities.insert(activity)
@@ -88,7 +88,7 @@ struct PreferencePage: View {
             .alert("Maximum Selections", isPresented: $showMaxSelectionAlert) {
                 Button("OK", role: .cancel) {}
             } message: {
-                Text("You can only select up to 7 activities.")
+                Text("You can only select up to 5 activities.")
             }
             .alert("Preferences Saved", isPresented: $saveSuccessful) {
                 Button("OK", role: .cancel) {}
