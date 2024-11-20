@@ -19,7 +19,7 @@ struct LoginView: View {
         Task {
             do {
                 let _ = try await AuthenticationManager.shared.signIn(email: email, password: password)
-                isSignedIn = true // This will trigger navigation to the home page
+                isSignedIn = true
             } catch {
                 errorMessage = "Error: \(error.localizedDescription)"
                 showError = true
@@ -29,55 +29,84 @@ struct LoginView: View {
 
     var body: some View {
         NavigationStack {
-            VStack {
-                // Email and password text fields
-                TextField("email", text: $email)
-                    .padding()
-                    .frame(width: 300, height: 50)
-                    .background(Color.black.opacity(0.05))
-                    .cornerRadius(8.0)
+            ZStack {
+                LinearGradient(
+                    gradient: Gradient(colors: [Color.blue, Color.blue.opacity(0.8)]),
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .ignoresSafeArea()
 
-                SecureField("password", text: $password)
-                    .padding()
-                    .frame(width: 300, height: 50)
-                    .background(Color.black.opacity(0.05))
-                    .cornerRadius(8.0)
-                    .padding(25)
+                VStack(spacing: 20) {
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 50)
+                            .fill(Color.white)
+                            .frame(height: 180)
+                            .offset(y: -50)
+                            .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 5)
 
-                // Sign In Button
-                Button(action: {
-                    signIn()
-                }) {
-                    Text("Sign In")
+                        Text("Welcome to Activity Finder")
+                            .font(.title)
+                            .fontWeight(.bold)
+                            .foregroundColor(.blue)
+                            .multilineTextAlignment(.center)
+                            .offset(y: -60)
+                    }
+                    .padding(.bottom, 30)
+
+                    TextField("Email", text: $email)
+                        .padding()
                         .frame(width: 300, height: 50)
-                        .background(Color.black.opacity(0.05))
-                        .cornerRadius(8.0)
-                        .padding(.bottom)
-                }
-                
-                .navigationDestination(isPresented: $isSignedIn) {
-                        homePageLoggedIn()
-                        .navigationBarBackButtonHidden(true)
-                }
-                    
-                
-                
+                        .background(Color.white.opacity(0.9))
+                        .cornerRadius(10)
+                        .shadow(color: .black.opacity(0.1), radius: 5, x: 0, y: 5)
 
-                // Sign Up Link
-                NavigationLink(destination: SignInPage()) {
-                    Text("Don't have an account? Sign up")
-                        .bold()
-                        .foregroundColor(.blue)
-                        .padding(.bottom, 25)
+                    SecureField("Password", text: $password)
+                        .padding()
+                        .frame(width: 300, height: 50)
+                        .background(Color.white.opacity(0.9))
+                        .cornerRadius(10)
+                        .shadow(color: .black.opacity(0.1), radius: 5, x: 0, y: 5)
+
+                    Button(action: {
+                        signIn()
+                    }) {
+                        Text("Sign In")
+                            .font(.headline)
+                            .foregroundColor(.white)
+                            .frame(width: 300, height: 50)
+                            .background(Color.blue.opacity(0.9))
+                            .cornerRadius(10)
+                            .shadow(color: .black.opacity(0.2), radius: 5, x: 0, y: 5)
+                    }
+                    .padding(.top, 10)
+                    .navigationDestination(isPresented: $isSignedIn) {
+                        homePageLoggedIn(isSignedIn: $isSignedIn)
+                            .navigationBarBackButtonHidden(true)
+                    }
+
+                    NavigationLink(destination: SignInPage()) {
+                        Text("Don't have an account? Sign up")
+                            .font(.subheadline)
+                            .bold()
+                            .foregroundColor(.white)
+                            .padding(.top, 10)
+                    }
+
+                    Spacer()
                 }
-            }
-            .alert(isPresented: $showError) {
-                Alert(title: Text("Authentication Error"), message: Text(errorMessage), dismissButton: .default(Text("OK")))
+                .alert(isPresented: $showError) {
+                    Alert(
+                        title: Text("Authentication Error"),
+                        message: Text(errorMessage),
+                        dismissButton: .default(Text("OK"))
+                    )
+                }
             }
         }
     }
 }
-    
+
 #Preview {
     LoginView()
 }
