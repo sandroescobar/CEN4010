@@ -1,4 +1,9 @@
-//Ernesto 11/20/2024
+//
+//  signInPage.swift
+//  HelloWorld
+//
+//  Created by Nathalia Carrasquero on 11/20/24.
+//
 
 import SwiftUI
 import FirebaseAuth
@@ -83,7 +88,7 @@ struct SignInPage: View {
                     .padding(.bottom, 10)
 
                     // Sign In Link
-                    NavigationLink(destination: LoginView()) {
+                    NavigationLink(destination: LoginViewupdated()) {
                         Text("Already have an account? Sign in")
                             .font(.subheadline)
                             .bold()
