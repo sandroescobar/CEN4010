@@ -1,10 +1,8 @@
-//Ernesto 11/20/2024
-
 import SwiftUI
 import FirebaseAuth
 
 @MainActor
-struct LoginView: View {
+struct LoginViewupdated: View {
     @State private var email = ""
     @State private var password = ""
     @State private var isSignedIn = false
@@ -40,22 +38,22 @@ struct LoginView: View {
                 .ignoresSafeArea()
 
                 VStack(spacing: 20) {
-                    ZStack {
-                        RoundedRectangle(cornerRadius: 50)
-                            .fill(Color.white)
-                            .frame(height: 180)
-                            .offset(y: -50)
-                            .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 5)
+                    // Logo Section
+                    Image("99B8D0F9-934C-4635-8E9C-90E6A2ACB67E") // Replace with your asset name for the uploaded logo
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 150, height: 150)
+                        .padding(.top, 30)
 
-                        Text("Welcome to Activity Finder")
-                            .font(.title)
-                            .fontWeight(.bold)
-                            .foregroundColor(.blue)
-                            .multilineTextAlignment(.center)
-                            .offset(y: -60)
-                    }
-                    .padding(.bottom, 30)
+                    // Welcome Title
+                    Text("Welcome to Activity Finder")
+                        .font(.title)
+                        .fontWeight(.bold)
+                        .foregroundColor(.white)
+                        .multilineTextAlignment(.center)
+                        .padding(.bottom, 30)
 
+                    // Email Input
                     TextField("Email", text: $email)
                         .padding()
                         .frame(width: 300, height: 50)
@@ -63,6 +61,7 @@ struct LoginView: View {
                         .cornerRadius(10)
                         .shadow(color: .black.opacity(0.1), radius: 5, x: 0, y: 5)
 
+                    // Password Input
                     SecureField("Password", text: $password)
                         .padding()
                         .frame(width: 300, height: 50)
@@ -70,6 +69,7 @@ struct LoginView: View {
                         .cornerRadius(10)
                         .shadow(color: .black.opacity(0.1), radius: 5, x: 0, y: 5)
 
+                    // Sign In Button
                     Button(action: {
                         signIn()
                     }) {
@@ -87,6 +87,7 @@ struct LoginView: View {
                             .navigationBarBackButtonHidden(true)
                     }
 
+                    // Sign Up Link
                     NavigationLink(destination: SignInPage()) {
                         Text("Don't have an account? Sign up")
                             .font(.subheadline)
@@ -109,6 +110,8 @@ struct LoginView: View {
     }
 }
 
-#Preview {
-    LoginView()
+struct ContentView_Previews: PreviewProvider {
+    static var previews: some View {
+        LoginViewupdated()
+    }
 }
