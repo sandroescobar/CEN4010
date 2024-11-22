@@ -1,16 +1,86 @@
-
-
 import SwiftUI
 import CoreLocation
 import FirebaseFirestore
 import FirebaseAuth
 
-struct LocationPage: View {
-    @State private var isLocationSharing = false
-    @State private var currentLocation: CLLocationCoordinate2D?
-    @State private var locationStatus: String = "Not Determined"
-    @State private var errorMessage: String?
+class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
+    private var locationManager = CLLocationManager()
+    
+    @Published var location: CLLocation?
+    @Published var locationStatus: String = "Not Determined"
+    @Published var errorMessage: String?
+    
+    override init() {
+        super.init()
+        locationManager.delegate = self
+        locationManager.desiredAccuracy = kCLLocationAccuracyBest
+        locationManager.distanceFilter = 10 // Update location every 10 meters
+    }
+    
+    func requestPermission() {
+        locationManager.requestWhenInUseAuthorization()
+    }
+    
+    func startUpdating() {
+        locationManager.startUpdatingLocation()
+    }
+    
+    func stopUpdating() {
+        locationManager.stopUpdatingLocation()
+    }
+    
+    // CLLocationManagerDelegate methods
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        guard let location = locations.last else { return }
+        self.location = location
+    }
+    
+    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+        errorMessage = "Location error: \(error.localizedDescription)"
+    }
+    
+    func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
+        switch status {
+        case .authorizedWhenInUse, .authorizedAlways:
+            locationStatus = "Authorized"
+        case .denied:
+            locationStatus = "Denied"
+            errorMessage = "Please enable location services in Settings"
+        case .notDetermined:
+            locationStatus = "Not Determined"
+        case .restricted:
+            locationStatus = "Restricted"
+            errorMessage = "Location access is restricted"
+        @unknown default:
+            locationStatus = "Unknown"
+        }
+    }
+}
 
+struct LocationPage: View {
+    @StateObject private var locationManager = LocationManager()
+    @State private var isLocationSharing = false
+    
+    // Function to save location to Firestore
+    private func saveLocationToFirestore() {
+        guard let location = locationManager.location,
+              let currentUser = Auth.auth().currentUser else { return }
+        
+        let db = Firestore.firestore()
+        let locationData: [String: Any] = [
+            "latitude": location.coordinate.latitude,
+            "longitude": location.coordinate.longitude,
+            "timestamp": FieldValue.serverTimestamp(),
+            "userId": currentUser.uid
+        ]
+        
+        db.collection("userLocations").document(currentUser.uid).setData(locationData) { error in
+            if let error = error {
+                locationManager.errorMessage = "Error saving location: \(error.localizedDescription)"
+            }
+        }
+    }
+    
     var body: some View {
         NavigationStack {
             ZStack {
@@ -20,7 +90,7 @@ struct LocationPage: View {
                     endPoint: .bottom
                 )
                 .ignoresSafeArea()
-
+                
                 VStack(spacing: 30) {
                     VStack {
                         Image(systemName: "location.fill")
@@ -29,29 +99,28 @@ struct LocationPage: View {
                             .frame(width: 80, height: 80)
                             .foregroundColor(.white)
                             .padding(.bottom, 10)
-
+                        
                         Text("Location Sharing")
                             .font(.largeTitle)
                             .fontWeight(.bold)
                             .foregroundColor(.white)
                     }
-
+                    
                     VStack(spacing: 10) {
-                        Text(locationStatus)
+                        Text(locationManager.locationStatus)
                             .font(.headline)
                             .foregroundColor(statusColor)
-
-                        if let location = currentLocation {
+                        
+                        if let location = locationManager.location {
                             VStack(spacing: 5) {
                                 Text("Current Location:")
                                     .font(.subheadline)
                                     .foregroundColor(.gray)
-
-                                Text("Lat: \(location.latitude), Lon: \(location.longitude)")
+                                
+                                Text("Lat: \(location.coordinate.latitude, specifier: "%.4f")")
+                                Text("Lon: \(location.coordinate.longitude, specifier: "%.4f")")
                                     .font(.caption)
-                                    .foregroundColor(.white)
-                                    .lineLimit(1)
-                                    .truncationMode(.middle)
+                                    .foregroundColor(.black)
                             }
                         }
                     }
@@ -61,13 +130,15 @@ struct LocationPage: View {
                             .fill(Color.white.opacity(0.8))
                             .shadow(color: .gray.opacity(0.4), radius: 10, x: 0, y: 5)
                     )
-
+                    
                     Spacer()
-
+                    
                     if !isLocationSharing {
                         Button(action: {
-                            requestLocationPermission()
-                            startLocationSharing()
+                            locationManager.requestPermission()
+                            locationManager.startUpdating()
+                            isLocationSharing = true
+                            saveLocationToFirestore()
                         }) {
                             Text("Start Sharing Location")
                                 .font(.headline)
@@ -80,7 +151,8 @@ struct LocationPage: View {
                         }
                     } else {
                         Button(action: {
-                            stopLocationSharing()
+                            locationManager.stopUpdating()
+                            isLocationSharing = false
                         }) {
                             Text("Stop Sharing Location")
                                 .font(.headline)
@@ -92,11 +164,21 @@ struct LocationPage: View {
                                 .padding(.horizontal)
                         }
                     }
-
+                    
+                    NavigationLink(destination: Text("Home")) {
+                        Text("Back to Home")
+                            .font(.headline)
+                            .foregroundColor(.white)
+                            .frame(height: 50)
+                            .frame(maxWidth: .infinity)
+                            .background(Color.blue)
+                            .cornerRadius(12)
+                            .padding(.horizontal)
+                    }
+                    
                     Spacer()
-
-                    // Error Message
-                    if let errorMessage = errorMessage {
+                    
+                    if let errorMessage = locationManager.errorMessage {
                         Text(errorMessage)
                             .foregroundColor(.red)
                             .font(.caption)
@@ -109,26 +191,12 @@ struct LocationPage: View {
             .navigationTitle("Location")
         }
     }
-
-    private func requestLocationPermission() {
-        locationStatus = "Requesting Permission..."
-    }
-
-    private func startLocationSharing() {
-        isLocationSharing = true
-        locationStatus = "Sharing Location"
-    }
-
-    private func stopLocationSharing() {
-        isLocationSharing = false
-        locationStatus = "Location Sharing Stopped"
-    }
-
+    
     private var statusColor: Color {
-        switch locationStatus {
-        case "Sharing Location":
+        switch locationManager.locationStatus {
+        case "Authorized":
             return .green
-        case "Location Sharing Stopped", "Requesting Permission...":
+        case "Not Determined":
             return .yellow
         default:
             return .red
