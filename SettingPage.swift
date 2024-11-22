@@ -12,7 +12,6 @@ struct SettingPage: View {
     var body: some View {
         NavigationView {
             ZStack {
-                // Background Color that adjusts to theme
                 LinearGradient(
                     gradient: Gradient(colors: isDarkMode ? [Color.black, Color.gray] : [Color.blue.opacity(0.8), Color.white]),
                     startPoint: .top,
@@ -21,7 +20,6 @@ struct SettingPage: View {
                 .ignoresSafeArea()
 
                 VStack(spacing: 30) {
-                    // Header Section
                     VStack {
                         Text("Settings")
                             .font(.largeTitle)
@@ -30,13 +28,9 @@ struct SettingPage: View {
                     }
                     .padding(.top, 30)
 
-                    // Email Display Card
                     cardView(title: "Email:", content: userEmail)
-
-                    // Password Placeholder
                     cardView(title: "Password:", content: "••••••••")
 
-                    // Theme Toggle
                     HStack {
                         Text("Theme:")
                             .font(.headline)
@@ -58,13 +52,8 @@ struct SettingPage: View {
                     )
                     .padding(.horizontal)
 
-                    // Sign Out Button
                     buttonView(title: "Sign Out", backgroundColor: .blue, action: signOut)
-
-                    // Switch Account Button
                     buttonView(title: "Switch Account", backgroundColor: .gray, action: switchAccount)
-
-                    // Delete Account Button
                     buttonView(title: "Delete Account", backgroundColor: .red) {
                         showDeleteConfirmation = true
                     }
@@ -79,9 +68,13 @@ struct SettingPage: View {
                         )
                     }
 
+                    // Non-functioning Back to Home Button
+                    buttonView(title: "Back to Home", backgroundColor: .blue) {
+                        // Placeholder action for non-functional button
+                    }
+
                     Spacer()
 
-                    // Error Message
                     if let errorMessage = errorMessage {
                         Text(errorMessage)
                             .foregroundColor(.red)
@@ -91,7 +84,6 @@ struct SettingPage: View {
                     }
                 }
             }
-            
             .alert(isPresented: $showErrorAlert) {
                 Alert(
                     title: Text("Error"),
@@ -102,11 +94,10 @@ struct SettingPage: View {
             .onAppear {
                 fetchUserEmail()
             }
-            .preferredColorScheme(isDarkMode ? .dark : .light) // Apply the selected theme
+            .preferredColorScheme(isDarkMode ? .dark : .light)
         }
     }
 
-    // MARK: - Helper Methods
     private func fetchUserEmail() {
         if let user = Auth.auth().currentUser {
             userEmail = user.email ?? "No email"
@@ -151,7 +142,6 @@ struct SettingPage: View {
         showErrorAlert = true
     }
 
-    // MARK: - Subviews
     private func cardView(title: String, content: String) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             Text(title)
