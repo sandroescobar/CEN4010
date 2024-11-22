@@ -3,6 +3,7 @@ import FirebaseFirestore
 import FirebaseAuth
 import Foundation
 
+// Define ActivityCategory
 enum ActivityCategory: String, CaseIterable, Identifiable {
     case outdoors = "Outdoors"
     case sports = "Sports"
@@ -15,6 +16,7 @@ enum ActivityCategory: String, CaseIterable, Identifiable {
     var id: String { self.rawValue }
 }
 
+// Define ActivityOption
 struct ActivityOption: Identifiable, Hashable {
     let id = UUID()
     let name: String
@@ -22,11 +24,13 @@ struct ActivityOption: Identifiable, Hashable {
     let icon: String
 }
 
+// Define UserPreferencesModel
 struct UserPreferencesModel: Codable {
     var activities: [String]
     var timestamp: Date
 }
 
+// Define PreferencesViewModel
 class PreferencesViewModel: ObservableObject {
     @Published var selectedActivities: Set<String> = []
     @Published var isLoading = false
@@ -56,34 +60,6 @@ class PreferencesViewModel: ObservableObject {
             ActivityOption(name: "Comedy Shows", category: .entertainment, icon: "face.smiling"),
             ActivityOption(name: "Theater", category: .entertainment, icon: "theatermasks"),
             ActivityOption(name: "Art Exhibitions", category: .entertainment, icon: "paintbrush")
-        ],
-        .wellness: [
-            ActivityOption(name: "Yoga", category: .wellness, icon: "figure.yoga"),
-            ActivityOption(name: "Meditation", category: .wellness, icon: "figure.mind.and.body"),
-            ActivityOption(name: "Spa Day", category: .wellness, icon: "sparkles"),
-            ActivityOption(name: "Fitness Classes", category: .wellness, icon: "dumbbell"),
-            ActivityOption(name: "Running", category: .wellness, icon: "figure.walk")
-        ],
-        .learning: [
-            ActivityOption(name: "Workshops", category: .learning, icon: "book"),
-            ActivityOption(name: "Online Courses", category: .learning, icon: "laptopcomputer"),
-            ActivityOption(name: "Book Clubs", category: .learning, icon: "books.vertical"),
-            ActivityOption(name: "Language Classes", category: .learning, icon: "globe"),
-            ActivityOption(name: "Coding Bootcamps", category: .learning, icon: "keyboard")
-        ],
-        .social: [
-            ActivityOption(name: "Networking Events", category: .social, icon: "person.3"),
-            ActivityOption(name: "Meetups", category: .social, icon: "person.crop.circle.badge.plus"),
-            ActivityOption(name: "Community Volunteering", category: .social, icon: "hands.sparkles"),
-            ActivityOption(name: "Game Nights", category: .social, icon: "gamecontroller"),
-            ActivityOption(name: "Parties", category: .social, icon: "party.popper")
-        ],
-        .foodAndDrink: [
-            ActivityOption(name: "Wine Tasting", category: .foodAndDrink, icon: "wineglass"),
-            ActivityOption(name: "Cooking Classes", category: .foodAndDrink, icon: "fork.knife"),
-            ActivityOption(name: "Food Festivals", category: .foodAndDrink, icon: "fork.knife.circle"),
-            ActivityOption(name: "Dining Out", category: .foodAndDrink, icon: "takeoutbag.and.cup.and.straw"),
-            ActivityOption(name: "Coffee Shops", category: .foodAndDrink, icon: "cup.and.saucer")
         ]
     ]
     
@@ -159,6 +135,7 @@ class PreferencesViewModel: ObservableObject {
     }
 }
 
+// Define PreferencePage
 struct PreferencePage: View {
     @StateObject private var viewModel = PreferencesViewModel()
     @State private var showMaxSelectionAlert = false
@@ -227,6 +204,7 @@ struct PreferencePage: View {
     }
 }
 
+// Define CategoryActivityView
 struct CategoryActivityView: View {
     let category: ActivityCategory
     let activities: [ActivityOption]
@@ -273,4 +251,3 @@ struct CategoryActivityView: View {
 #Preview {
     PreferencePage()
 }
-
